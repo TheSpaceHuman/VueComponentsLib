@@ -1,6 +1,5 @@
 <template>
   <form id="index-form" @submit.prevent="submitForm()">
-    <!--is-valid is-invalid-->
     <div class="form-group">
       <label for="name">Имя:</label>
       <input

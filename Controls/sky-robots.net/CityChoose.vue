@@ -44,7 +44,6 @@
       test(event) {
         event.target.focus()
         event.target.removeAttribute('readonly')
-        // console.log('Focus ', event)
       },
       remoteMethod(query) {
         console.log(query)
@@ -61,9 +60,7 @@
             params: {
               query: query,
               contentType: 'region',
-              // typeCode: '1|2|4',
               limit: 11,
-              // withParent: 1
             }
           })
           this.cities = res.data.result
@@ -89,7 +86,6 @@
     mounted() {
       const input = document.querySelector('.el-input__inner')
       input.removeAttribute('readonly')
-      // console.log('Input: ', input)
     }
   }
 </script>

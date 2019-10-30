@@ -1,5 +1,6 @@
 <template>
   <form id="register-form" @submit.prevent="submitForm">
+    <slot></slot>
     <div class="form-group row">
       <label for="email" class="col-md-4 col-form-label text-md-right">Логин (E-mail)</label>
 
@@ -23,7 +24,7 @@
         >Поле обязательное</div>
         <div class="invalid-feedback"
           v-if="!$v.form.email.email && $v.form.email.$dirty"
-        >Данное поле должно быть электронной почтой</div>
+        >Невалидный email адрес</div>
         <div class="invalid-feedback"
              v-if="!$v.form.email.isUnique && $v.form.email.$dirty"
         >{{ isUnique }}</div>
@@ -77,9 +78,6 @@
         >Поле обязательное</div>
       </div>
     </div>
-
-
-
     <city-choose
       :valid="{
            'is-invalid': $v.form.region.$invalid && $v.form.region.$dirty,
@@ -94,8 +92,6 @@
         v-if="!$v.form.region.required && $v.form.region.$dirty"
       >Поле обязательное</div>
     </div>
-
-
     <div class="form-group row">
       <label for="password" class="col-md-4 col-form-label text-md-right">Пароль</label>
 
@@ -175,6 +171,7 @@
         >Поле обязательное</div>
       </div>
     </div>
+
     <div class="form-group row" style="display: none;">
       <label for="registration_referral_link" class="col-md-4 col-form-label text-md-right">Код реферера</label>
       <div class="col-md-6">
@@ -184,7 +181,7 @@
           class="form-control"
           name="registration_referral_link"
           v-model="form.code"
-          placeholder="Введите код реферара, поле для разработки"
+          placeholder="Введите код куратор"
 
         >
       </div>
@@ -206,7 +203,26 @@ import toastr from 'toastr'
 import { required, email, maxLength, minLength, sameAs} from 'vuelidate/lib/validators'
 export default {
   name: 'RegisterForm',
-  props: ['action', 'method', 'checkEmailAction'],
+  props: {
+    action: {
+      type: String,
+      default: '',
+      required: true
+    },
+    method: {
+      type: String,
+      default: 'post'
+    },
+    checkEmailAction: {
+      type: String,
+      default: '',
+      required: true
+    },
+    code: {
+      type: String,
+      default: ''
+    },
+  },
   data() {
     return {
       isUnique: '',
@@ -287,6 +303,9 @@ export default {
       }
     }
 
+  },
+  mounted() {
+    this.form.code = this.code
   }
 
 }
