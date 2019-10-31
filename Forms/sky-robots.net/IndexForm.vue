@@ -1,5 +1,5 @@
 <template>
-  <form id="index-form" @submit.prevent="submitForm()">
+  <form id="index-form" @submit.prevent="submitForm">
     <div class="form-group">
       <label for="name">Имя:</label>
       <input
@@ -9,7 +9,7 @@
         name="name"
         v-model.trim="form.name"
         :class="{
-          'is-invalid': $v.form.name.$invalid && $v.form.name.$dirty,
+           'is-invalid': $v.form.name.$invalid && $v.form.name.$dirty,
            'is-valid': !$v.form.name.$invalid && $v.form.name.$dirty
          }"
         @blur="$v.form.name.$touch()"
@@ -32,7 +32,7 @@
         @blur="$v.form.email.$touch()"
       >
       <div class="invalid-feedback" v-if="!$v.form.email.required && $v.form.email.$dirty">Поле обязательное</div>
-      <div class="invalid-feedback" v-if="!$v.form.email.email && $v.form.email.$dirty">Не валидный email</div>
+      <div class="invalid-feedback" v-if="!$v.form.email.email && $v.form.email.$dirty">Невалидный email</div>
     </div>
     <div class="form-group">
       <label for="telegram">Ник в Telegram:</label>
@@ -49,7 +49,8 @@
         type="submit"
         :disabled="$v.$invalid"
       >
-        Отправить</button>
+        Отправить
+      </button>
     </div>
   </form>
 </template>
@@ -60,7 +61,14 @@ import toastr from 'toastr'
 import { required, email } from 'vuelidate/lib/validators'
 export default {
   name: 'IndexForm',
-  props: ['action', 'method'],
+  props: {
+    action: {
+      required: true
+    },
+    method: {
+      default: 'post'
+    }
+  },
   data() {
     return {
       form: {
@@ -71,25 +79,28 @@ export default {
     }
   },
   methods: {
-    clearForm() {
-      this.form.name = ''
-      this.form.email = ''
-      this.form.telegram = ''
+    clear() {
+      this.form = {
+        name: '',
+        email: '',
+        telegram: ''
+      }
       this.$v.$reset()
     },
     async submitForm() {
       if(this.$v.$invalid) {
-        toastr.error('В форме содержаться ошибки', 'Ошибка');
+        toastr.error('В форме содержаться ошибки');
       } else {
         try {
-          console.log('action: ', this.action)
-          console.log('form: ', this.form)
           const res = await axios.post(this.action, this.form);
-          toastr.success(`Спасибо ${this.form.name}, ваше сообщение успешно отправлено`, 'Успех');
-          console.log(res)
-          this.clearForm()
+          if(res.data.message.type === 'success') {
+            toastr.success(res.data.message.body);
+          } else {
+            toastr.error('Что-то пошло не так на сервере');
+          }
+          this.clear()
         } catch (e) {
-          toastr.error('Что-то пошло не так', 'Ошибка');
+          toastr.error('Что-то пошло не так');
           console.log(e)
         }
       }

@@ -56,7 +56,6 @@
     </div>
     <div class="form-group row">
       <label for="phone" class="col-md-4 col-form-label text-md-right">Телефон</label>
-
       <div class="col-md-6">
         <input
           id="phone"
@@ -187,7 +186,7 @@
       </div>
     </div>
 
-    <div class="d-flex justify-content-center align-items-center py-5">
+    <div class="d-flex justify-content-center align-items-center pt-4 pb-3">
       <button type="submit" class="btn btn-primary" :disabled="$v.$invalid">
         Отправить
       </button>
@@ -240,19 +239,23 @@ export default {
   },
   methods: {
     async submitForm() {
-      try {
-        const res = await axios.post(this.action, this.form);
-        // console.log(res)
-        if(res.status === 200) {
-          toastr.success(`${this.form.name} вы успешно зарегистрировались`, 'Успех');
+      if(this.$v.$invalid) {
+        toastr.error('В форме содержаться ошибки');
+      } else {
+        try {
+          const res = await axios.post(this.action, this.form);
+          if(res.status === 200) {
+            toastr.success(`${this.form.name} вы успешно зарегистрировались`);
+          } else {
+            toastr.error('Что-то пошло не так');
+          }
+          this.$v.$reset()
           window.location.href = '/dashboard'
-        } else {
-          toastr.error('Что-то пошло не так', 'Ошибка');
+        } catch (e) {
+          console.log(e)
         }
-        this.$v.$reset()
-      } catch (e) {
-        console.log(e)
       }
+
     },
     updateRegion(value) {
       this.form.region = value
