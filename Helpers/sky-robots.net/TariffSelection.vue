@@ -5,44 +5,74 @@
         <div class="tariff-selection__item card">
           <h4 class="tariff-selection__item__title text-center h3">{{ currentPackage.title }}</h4>
           <div class="tariff-selection__item__price text-center py-4">
-            <span>{{ currentPackage.price_month }} / месяц</span>
+            <span v-if="parseFloat(currentPackage.price_month) > 0">{{ currentPackage.price_month }} / месяц</span>
             <br>
-            <span>{{ currentPackage.price_year }} / год</span>
+            <span v-if="parseFloat(currentPackage.price_year) > 0">{{ currentPackage.price_year }} / год</span>
           </div>
           <div class="tariff-selection__item__actions">
             <button
+              v-if="parseFloat(currentPackage.price_month) > 0"
               @click="updateTariff(currentPackage.id, 30)"
               type="button"
               class="btn btn-success m-2">Продлить на месяц</button>
             <button
+              v-if="parseFloat(currentPackage.price_year) > 0"
               @click="updateTariff(currentPackage.id, 365)"
               type="button"
               class="btn btn-danger m-2">Продлить на год</button>
           </div>
         </div>
       </div>
-      <div
-        v-else-if="type === 'change'"
-        v-for="pack in packagesParse"
-        :key="pack.id"
-        class="col-12 col-md-4 col-lg-3"
+      <div v-else-if="type === 'change'"
+        class="col-12 col-md-6"
       >
         <div
-          :class="{'active': pack.id == user.package_id}"
-          class="tariff-selection__item card"
-        >
-          <h4 class="tariff-selection__item__title text-center h3">{{ pack.title }}</h4>
+          v-if="nextPackage"
+          class="tariff-selection__item card">
+          <h4 class="tariff-selection__item__title text-center h3">{{ nextPackage.title }}</h4>
           <div class="tariff-selection__item__price text-center py-4">
-            <span>{{ pack.price_month }} / месяц</span>
+            <span v-if="parseFloat(nextPackage.price_month) > 0">{{ nextPackage.price_month }} / месяц</span>
             <br>
-            <span>{{ pack.price_year }} / год</span>
+            <span v-if="parseFloat(nextPackage.price_year) > 0">{{ nextPackage.price_year }} / год</span>
           </div>
           <div class="tariff-selection__item__actions">
             <button
+              v-if="parseFloat(nextPackage.price_month) > 0"
+              @click="updateTariff(nextPackage.id, 30)"
+              type="button"
+              class="btn btn-success m-2">Купить на месяц</button>
+            <button
+              v-if="parseFloat(nextPackage.price_year) > 0"
+              @click="updateTariff(nextPackage.id, 365)"
+              type="button"
+              class="btn btn-danger m-2">Купить на год</button>
+          </div>
+        </div>
+        <div v-else class="tariff-selection__item card">
+          <h4 class="tariff-selection__item__title text-center h3">У вас активна максимальная лицензия</h4>
+        </div>
+      </div>
+      <div v-else-if="type === 'new'"
+           v-for="pack in packagesParse"
+           :key="pack.id"
+           class="col-12 col-md-4 col-lg-3"
+      >
+        <div
+          class="tariff-selection__item card">
+          <h4 class="tariff-selection__item__title text-center h3">{{ pack.title }}</h4>
+          <div class="tariff-selection__item__price text-center py-4">
+            <span v-if="parseFloat(pack.price_month) > 0">{{ pack.price_month }} / месяц</span>
+            <br>
+            <span v-if="parseFloat(pack.price_year) > 0">{{ pack.price_year }} / год</span>
+          </div>
+          <div class="tariff-selection__item__actions">
+            <button
+              v-if="parseFloat(pack.price_month) > 0"
               @click="updateTariff(pack.id, 30)"
               type="button"
               class="btn btn-success m-2">Купить на месяц</button>
             <button
+              v-if="parseFloat(pack.price_year) > 0"
               @click="updateTariff(pack.id, 365)"
               type="button"
               class="btn btn-danger m-2">Купить на год</button>
@@ -69,9 +99,9 @@
         required: true
       },
       type: {
-        // continue | change
+        // continue | change | new
         type: String,
-        default: 'change'
+        default: 'new'
       },
       user: {
         // JSON
@@ -100,10 +130,15 @@
           });
           if(res.data.message.type === 'success') {
             toastr.success(res.data.message.body);
-            setTimeout(this.hideModal, 500)
+            setTimeout(() => document.location.reload(), 1500)
+          } else if(res.data.message.type === 'warning') {
+            toastr.warning(res.data.message.body);
+          } else if(res.data.message.type === 'error') {
+            toastr.error(res.data.message.body);
           } else {
-            toastr.error('Что-то пошло не так');
+            toastr.error('На сервере что-то пошло не так!');
           }
+          setTimeout(this.hideModal, 500)
         } catch (e) {
           console.log(e)
         }
@@ -122,7 +157,15 @@
           return this.packagesParse[index]
         }
         return false
+      },
+      nextPackage() {
+        let expensiveRates = this.packagesParse.filter((el) => parseFloat(el.price_month ) > parseFloat(this.currentPackage.price_month))
+        if(expensiveRates.length > 0) {
+          return expensiveRates[0]
+        }
+        return false
       }
+
     }
   }
 </script>
